@@ -63,6 +63,32 @@ app.post("/products", async (req, res) => {
     }
 })
 
+
+//search by categories
+
+async function productsByCategory(category) {
+    try {
+        const products = await Product.find({ category: new RegExp(`^${category}$`, 'i') })
+        return products;
+    } catch (error) {
+        throw error
+    }
+}
+
+app.get("/products/:category", async (req, res) => {
+    const { category } = req.params;
+    try {
+        const products = await productsByCategory(category);
+        if (products && products.length > 0) {
+            res.status(200).json({ message: "Products retrieved successfully", products });
+        } else {
+            res.status(404).json({ error: "No products found for this category" });
+        }
+    } catch (error) {
+        res.status(500).json({ error: "Failed to fetch category." })
+    }
+})
+
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`App is up at port ${PORT}`)
