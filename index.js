@@ -3,10 +3,16 @@ const app = express()
 const dotenv = require("dotenv");
 dotenv.config();
 app.use(express.json())
+const cors = require("cors");
 const { initializeDatabase } = require("./db/db.connect")
 const Product = require("./model/product.model")
 
+const corsOptions = {
+    origin: "*",
+    credentials: true
+}
 
+app.use(cors(corsOptions))
 initializeDatabase();
 
 app.get("/", (req, res) => {
@@ -23,7 +29,7 @@ async function getAllProducts() {
     }
 }
 
-app.get("/products", async (req, res) => {
+app.get("/products/all", async (req, res) => {
     try {
         const products = await getAllProducts();
         if (products) {
