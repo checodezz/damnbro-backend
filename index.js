@@ -95,6 +95,32 @@ app.get("/products/:category", async (req, res) => {
     }
 })
 
+//product by id 
+
+async function getProductById(productId) {
+    try {
+        const product = await Product.findById(productId);
+        return product;
+    } catch (error) {
+        throw error
+    }
+}
+
+
+app.get("/product/:productId", async (req, res) => {
+    const { productId } = req.params;
+    try {
+        const product = await getProductById(productId);
+        if (product) {
+            res.status(200).json({ message: "Product fetching successful", product })
+        } else {
+            res.status(404).json({ message: "Product not found." })
+        }
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ error: "failed to fetch Product" })
+    }
+})
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`App is up at port ${PORT}`)
