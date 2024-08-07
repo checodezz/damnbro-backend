@@ -5,7 +5,9 @@ dotenv.config();
 app.use(express.json())
 const cors = require("cors");
 const { initializeDatabase } = require("./db/db.connect")
-const Product = require("./model/product.model")
+const Product = require("./model/product.model");
+const Cart = require("./model/cart.model");
+
 
 const corsOptions = {
     origin: "*",
@@ -121,6 +123,49 @@ app.get("/product/:productId", async (req, res) => {
         res.status(500).json({ error: "failed to fetch Product" })
     }
 })
+
+
+
+//Cart api's
+//add to cart;
+
+async function addToCart(productId) {
+    try {
+        let cartItem = await Cart.findOne({ productId });
+        if (cartItem) {
+            cartItem.quantity += 1
+            await cartItem.save()
+        } else {
+            cartItem = new Cart({ productId, quantity: 1 });
+            await cartItem.save()
+        }
+
+        const populatedCartItem = await Cart.findById(cartItem._id).populate('productId')
+        return populatedCartItem;
+
+    } catch (error) {
+        throw error
+    }
+}
+
+app.post("/cart", async (req, res) => {
+    console.log(req.body)
+    const { productId } = req.body;
+
+    if (!productId) {
+        return res.status(400).json({ error: 'Product ID is required' });
+    }
+
+    try {
+        const product = await addToCart(productId);
+        res.status(200).json({ message: "product added successfully.", product })
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ error: error.message });
+    }
+})
+
+
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`App is up at port ${PORT}`)
