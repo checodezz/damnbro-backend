@@ -163,8 +163,30 @@ app.post("/cart", async (req, res) => {
         console.log(error)
         res.status(500).json({ error: error.message });
     }
-})
+});
 
+async function fetchCart() {
+    try {
+        const cart = await Cart.find()
+        return cart
+    } catch (error) {
+        throw error
+    }
+}
+
+app.get("/cart", async (req, res) => {
+    try {
+        const cart = await fetchCart();
+        if (cart) {
+            res.status(200).json({ message: "Cart items", cart })
+        } else {
+            res.status(404).json({ error: "Cart items not found." })
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to get   data from cart" })
+    }
+})
 
 const PORT = 3000;
 app.listen(PORT, () => {
