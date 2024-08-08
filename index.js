@@ -128,28 +128,22 @@ app.get("/product/:productId", async (req, res) => {
 
 //Cart api's
 //add to cart;
-
 async function addToCart(productId) {
     try {
-        let cartItem = await Cart.findOne({ productId });
-        if (cartItem) {
-            cartItem.quantity += 1
-            await cartItem.save()
-        } else {
-            cartItem = new Cart({ productId, quantity: 1 });
-            await cartItem.save()
-        }
+        const cartItem = await Cart.findOneAndUpdate(
+            { productId },
+            { $inc: { quantity: 1 } },
+            { new: true, upsert: true }
+        ).populate('productId');
 
-        const populatedCartItem = await Cart.findById(cartItem._id).populate('productId')
-        return populatedCartItem;
-
+        return cartItem;
     } catch (error) {
-        throw error
+        throw error;
     }
 }
 
 app.post("/cart", async (req, res) => {
-    console.log(req.body)
+    console.log(req.body);
     const { productId } = req.body;
 
     if (!productId) {
@@ -158,13 +152,36 @@ app.post("/cart", async (req, res) => {
 
     try {
         const product = await addToCart(productId);
-        res.status(200).json({ message: "product added successfully.", product })
+        res.status(200).json({ message: "Product added successfully.", product });
     } catch (error) {
-        console.log(error)
+        console.log(error);
         res.status(500).json({ error: error.message });
     }
-})
+});
 
+//fetch cart items
+async function fetchCart() {
+    try {
+        const cart = await Cart.find().populate("productId")
+        return cart
+    } catch (error) {
+        throw error
+    }
+}
+
+app.get("/cart", async (req, res) => {
+    try {
+        const cart = await fetchCart();
+        if (cart) {
+            res.status(200).json({ message: "Cart items", cart })
+        } else {
+            res.status(404).json({ error: "Cart items not found." })
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to get   data from cart" })
+    }
+})
 
 const PORT = 3000;
 app.listen(PORT, () => {
