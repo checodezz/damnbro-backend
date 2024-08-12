@@ -124,26 +124,9 @@ app.get("/product/:productId", async (req, res) => {
     }
 })
 
-
-
-//Cart api's
-//add to cart;
-/* async function addToCart(productId) {
-    try {
-        const cartItem = await Cart.findOneAndUpdate(
-            { productId },
-            { $inc: { quantity: 1 } },
-            { new: true, upsert: true }
-        ).populate('productId');
-
-        return cartItem;
-    } catch (error) {
-        throw error;
-    }
-} */
-
 async function updateCart(productId, operation) {
     try {
+
         const incrementValue = operation === "increment" ? 1 : -1;
 
         const product = await Cart.findOneAndUpdate(
@@ -154,7 +137,7 @@ async function updateCart(productId, operation) {
 
         if (product && product.quantity <= 0) {
             await Cart.findByIdAndDelete(product._id);  // Deletes the cart item by its own _id
-            return null;
+            return { deletedProductId: product._id };
         }
 
         return product; // Return the updated product if quantity is still above 0
