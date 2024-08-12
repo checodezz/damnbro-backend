@@ -124,11 +124,10 @@ app.get("/product/:productId", async (req, res) => {
     }
 })
 
+//add to cart or update quantity
 async function updateCart(productId, operation) {
     try {
-
         const incrementValue = operation === "increment" ? 1 : -1;
-
         const product = await Cart.findOneAndUpdate(
             { productId: productId },
             { $inc: { quantity: incrementValue } },
@@ -136,11 +135,10 @@ async function updateCart(productId, operation) {
         ).populate("productId");
 
         if (product && product.quantity <= 0) {
-            await Cart.findByIdAndDelete(product._id);  // Deletes the cart item by its own _id
+            await Cart.findByIdAndDelete(product._id);
             return { deletedProductId: product._id };
         }
-
-        return product; // Return the updated product if quantity is still above 0
+        return product
     } catch (error) {
         throw error;
     }
@@ -148,15 +146,13 @@ async function updateCart(productId, operation) {
 
 
 app.post("/cart", async (req, res) => {
-    const { productId, operation } = req.body; // Make sure these match the data sent from frontend
+    const { productId, operation } = req.body;
     console.log("Received data:", { productId, operation });
-
     if (!productId) {
         return res.status(400).json({ error: 'Product ID is required' });
     }
-
     try {
-        const product = await updateCart(productId, operation); // Pass only the productId and operation
+        const product = await updateCart(productId, operation);
         if (product) {
             res.status(200).json({ message: "Product updated successfully.", product });
         } else {
@@ -168,24 +164,34 @@ app.post("/cart", async (req, res) => {
     }
 });
 
-/* 
-app.post("/cart", async (req, res) => {
-    console.log(req.body);
-    const { productId } = req.body;
- 
-    if (!productId) {
-        return res.status(400).json({ error: 'Product ID is required' });
-    }
- 
+//delete item from cart 
+async function deleteProductFromCart(productId) {
+
     try {
-        const product = await addToCart(productId);
-        res.status(200).json({ message: "Product added successfully.", product });
+        const product = await Cart.findByIdAndDelete(productId)
+        return product
+    } catch (error) {
+        console.log(error)
+        throw error
+    }
+}
+
+app.delete("/cart/delete/:id", async (req, res) => {
+    const { id } = req.params;
+    try {
+        const deletedProduct = await deleteProductFromCart(id);
+
+        if (deletedProduct) {
+            res.status(200).json({ message: "Product deleted successfully", product: deletedProduct });
+        } else {
+            res.status(404).json({ message: "Product not found" });
+        }
     } catch (error) {
         console.log(error);
-        res.status(500).json({ error: error.message });
+        res.status(500).json({ error: "An error occurred while deleting the product" });
     }
 });
- */
+
 //fetch cart items
 async function fetchCart() {
     try {
