@@ -7,6 +7,7 @@ const cors = require("cors");
 const { initializeDatabase } = require("./db/db.connect")
 const Product = require("./model/product.model");
 const Cart = require("./model/cart.model");
+const Wishlist = require("./model/wishlist.model");
 
 
 const corsOptions = {
@@ -215,7 +216,38 @@ app.get("/cart", async (req, res) => {
         res.status(500).json({ error: "Failed to get   data from cart" })
     }
 })
+// Function to toggle wishlist status
+async function toggleWishlist(productId) {
+    try {
+        const product = await Product.findById(productId);
+        if (!product) {
+            console.log("Product not found");
+            return null
+        }
+        product.wishlist = !product.wishlist;
+        await product.save();
+        return product;
+    } catch (error) {
+        console.log("Failed to toggle wishlist status:", error);
+        throw error
+    }
+}
 
+// Route to handle wishlist toggle
+app.post("/wishlist/toggle/:productId", async (req, res) => {
+    try {
+        const { productId } = req.params;
+        const updatedProduct = await toggleWishlist(productId);
+        if (updatedProduct) {
+            res.status(200).json(updatedProduct); // Send updated product as response
+        } else {
+            res.status(404).json({ error: "Product not found" }); // Handle case where product is not found
+        }
+    } catch (error) {
+        console.log("Failed to toggle wishlist status:", error);
+        res.status(500).json({ error: "Failed to toggle wishlist status" });
+    }
+});
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`App is up at port ${PORT}`)
