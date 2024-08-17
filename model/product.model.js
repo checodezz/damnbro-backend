@@ -13,7 +13,6 @@ const ProductSchema = new mongoose.Schema({
 
     description: {
         type: String,
-        required: true
     },
     productImage: {
         type: String,
@@ -31,6 +30,11 @@ const ProductSchema = new mongoose.Schema({
     },
     discount: {
         type: Number,
+        required: true
+    },
+    wishlist: {
+        type: Boolean,
+        default: false,
         required: true
     }
 }, { timestamps: true })
