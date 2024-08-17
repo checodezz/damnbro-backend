@@ -7,7 +7,6 @@ const cors = require("cors");
 const { initializeDatabase } = require("./db/db.connect")
 const Product = require("./model/product.model");
 const Cart = require("./model/cart.model");
-const Wishlist = require("./model/wishlist.model");
 
 
 const corsOptions = {
@@ -46,6 +45,19 @@ app.get("/products/all", async (req, res) => {
     }
 })
 
+
+async function fetchMenCategory() {
+    try {
+        const products = await Product.find({ category: })
+    } catch (error) {
+        console.log(error);
+        throw error
+    }
+}
+
+
+
+
 //add a product
 async function addProduct(newProduct) {
     try {
@@ -56,6 +68,7 @@ async function addProduct(newProduct) {
         throw error;
     }
 }
+
 
 
 app.post("/products", async (req, res) => {
