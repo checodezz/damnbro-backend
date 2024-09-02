@@ -7,6 +7,7 @@ const cors = require("cors");
 const { initializeDatabase } = require("./db/db.connect")
 const Product = require("./model/product.model");
 const Cart = require("./model/cart.model");
+const Address = require("./model/address.model")
 
 
 const corsOptions = {
@@ -247,6 +248,58 @@ app.post("/wishlist/toggle/:productId", async (req, res) => {
         res.status(500).json({ error: "Failed to toggle wishlist status" });
     }
 });
+
+//add an address
+async function addAddress(addressBody) {
+    try {
+        const address = new Address(addressBody);
+        const saveAddress = await address.save();
+        return saveAddress
+    } catch (error) {
+        console.log(error);
+        throw error
+    }
+}
+
+app.post("/address", async (req, res) => {
+    try {
+        const address = await addAddress(req.body)
+        if (address) {
+            res.status(200).json({ message: "Address added successfully", address })
+        } else {
+            res.status(404).json({ error: "Unable to add Address." })
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to add Address." })
+    }
+})
+
+//get an address
+async function getAddresses() {
+    try {
+        const addresses = await Address.find();
+        return addresses;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+app.get("/addresses", async (req, res) => {
+    try {
+        const addresses = await getAddresses();
+        if (addresses.length > 0) {
+            res.status(200).json({ message: "Addresses fetched successfully", addresses });
+        } else {
+            res.status(404).json({ error: "No addresses found." });
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to fetch addresses." });
+    }
+});
+
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`App is up at port ${PORT}`)
