@@ -46,18 +46,6 @@ app.get("/products/all", async (req, res) => {
 })
 
 
-async function fetchMenCategory() {
-    try {
-        const products = await Product.find({ category: })
-    } catch (error) {
-        console.log(error);
-        throw error
-    }
-}
-
-
-
-
 //add a product
 async function addProduct(newProduct) {
     try {
@@ -68,8 +56,6 @@ async function addProduct(newProduct) {
         throw error;
     }
 }
-
-
 
 app.post("/products", async (req, res) => {
     try {
