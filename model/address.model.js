@@ -6,11 +6,11 @@ const addressSchema = new mongoose.Schema({
         required: true,
     },
     mobileNumber: {
-        type: String,
+        type: Number,
         required: false,
     },
     secondaryMobileNumber: {
-        type: String,
+        type: Number,
         required: false,
     },
     state: {
@@ -22,7 +22,7 @@ const addressSchema = new mongoose.Schema({
         required: true,
     },
     postalCode: {
-        type: String,
+        type: Number,
         required: true,
     },
     address: {
