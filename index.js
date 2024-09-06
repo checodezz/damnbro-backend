@@ -286,7 +286,7 @@ async function getAddresses() {
     }
 }
 
-app.get("/addresses", async (req, res) => {
+app.get("/address", async (req, res) => {
     try {
         const addresses = await getAddresses();
         if (addresses.length > 0) {
@@ -299,6 +299,39 @@ app.get("/addresses", async (req, res) => {
         res.status(500).json({ error: "Failed to fetch addresses." });
     }
 });
+
+//updating an address
+app.put("/address/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updatedData = req.body;
+
+        // Find the address by ID and update it with the new data
+        const updatedAddress = await Address.findByIdAndUpdate(id, updatedData, { new: true });
+
+        if (!updatedAddress) {
+            return res.status(404).json({ message: 'Address not found' });
+        }
+
+        res.status(200).json(updatedAddress);
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating address', error });
+    }
+})
+
+app.delete("/address/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deletedAddress = await Address.findByIdAndDelete(id);
+        if (!deletedAddress) {
+            return res.status(404).json({ message: 'Address not found' });
+        }
+        res.status(200).json({ message: 'Address deleted successfully', id });
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting address', error });
+    }
+});
+
 
 const PORT = 3000;
 app.listen(PORT, () => {
