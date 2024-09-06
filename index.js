@@ -1,14 +1,16 @@
 const express = require("express")
 const app = express()
 const dotenv = require("dotenv");
+const cors = require("cors");
+const razorpay = require("razorpay")
 dotenv.config();
 app.use(express.json())
-const cors = require("cors");
+app.use(express.urlencoded({ extended: false }))
 const { initializeDatabase } = require("./db/db.connect")
 const Product = require("./model/product.model");
 const Cart = require("./model/cart.model");
-const Address = require("./model/address.model")
-
+const Address = require("./model/address.model");
+const Razorpay = require("razorpay");
 
 const corsOptions = {
     origin: "*",
@@ -17,6 +19,28 @@ const corsOptions = {
 
 app.use(cors(corsOptions))
 initializeDatabase();
+
+app.post("/order", async (req, res) => {
+    try {
+        const razorpay = new Razorpay({
+            key_id: process.env.RAZORPAY_KEY_ID,
+            key_secret: process.env.RAZORPAY_SECRET
+        })
+        const options = req.body;
+        const order = await razorpay.orders.create(options);
+        if (!order) {
+            return res.status(500).send("Error")
+        }
+        res.json(order)
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("error");
+
+    }
+
+
+})
+
 
 app.get("/", (req, res) => {
     res.send("Hello")
