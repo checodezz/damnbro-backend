@@ -7,6 +7,7 @@ const cors = require("cors");
 const { initializeDatabase } = require("./db/db.connect")
 const Product = require("./model/product.model");
 const Cart = require("./model/cart.model");
+const Address = require("./model/address.model")
 
 
 const corsOptions = {
@@ -247,6 +248,91 @@ app.post("/wishlist/toggle/:productId", async (req, res) => {
         res.status(500).json({ error: "Failed to toggle wishlist status" });
     }
 });
+
+//add an address
+async function addAddress(addressBody) {
+    try {
+        const address = new Address(addressBody);
+        const saveAddress = await address.save();
+        return saveAddress
+    } catch (error) {
+        console.log(error);
+        throw error
+    }
+}
+
+app.post("/address", async (req, res) => {
+    try {
+        const address = await addAddress(req.body)
+        if (address) {
+            res.status(200).json({ message: "Address added successfully", address })
+        } else {
+            res.status(404).json({ error: "Unable to add Address." })
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to add Address." })
+    }
+})
+
+//get an address
+async function getAddresses() {
+    try {
+        const addresses = await Address.find();
+        return addresses;
+    } catch (error) {
+        console.log(error);
+        throw error;
+    }
+}
+
+app.get("/address", async (req, res) => {
+    try {
+        const addresses = await getAddresses();
+        if (addresses.length > 0) {
+            res.status(200).json({ message: "Addresses fetched successfully", addresses });
+        } else {
+            res.status(404).json({ error: "No addresses found." });
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to fetch addresses." });
+    }
+});
+
+//updating an address
+app.put("/address/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updatedData = req.body;
+
+        // Find the address by ID and update it with the new data
+        const updatedAddress = await Address.findByIdAndUpdate(id, updatedData, { new: true });
+
+        if (!updatedAddress) {
+            return res.status(404).json({ message: 'Address not found' });
+        }
+
+        res.status(200).json(updatedAddress);
+    } catch (error) {
+        res.status(500).json({ message: 'Error updating address', error });
+    }
+})
+
+app.delete("/address/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+        const deletedAddress = await Address.findByIdAndDelete(id);
+        if (!deletedAddress) {
+            return res.status(404).json({ message: 'Address not found' });
+        }
+        res.status(200).json({ message: 'Address deleted successfully', id });
+    } catch (error) {
+        res.status(500).json({ message: 'Error deleting address', error });
+    }
+});
+
+
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`App is up at port ${PORT}`)
